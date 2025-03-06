@@ -1,0 +1,55 @@
+# example_game/scenes/hallway.yaml
+---
+name: "East Hallway"
+description: "A long, narrow hallway stretches before you, lined with faded wallpaper. Portrait frames hang at regular intervals, but strangely, all the canvases are blank. Dust motes dance in the moonlight that streams through a window at the far end. The floorboards creak beneath your feet with every step."
+
+# Exits
+exits:
+  entrance:
+    target: "starting_room"
+    description: "The hallway leads back to the entrance hall."
+  
+  study_door:
+    target: "study"
+    description: "A door with a brass nameplate reading 'Study'."
+    
+  kitchen_door:
+    target: "kitchen"
+    description: "A swinging door that presumably leads to the kitchen."
+  
+  small_door:
+    target: "servants_quarters"
+    description: "A small, unassuming door, likely for servants to move around unobtrusively."
+    hidden: true
+    
+# Objects
+objects:
+  portraits:
+    description: "The frames contain no images, just blank canvases. As you look closer, you notice faint outlines as if the subjects were erased rather than removed."
+    movable: false
+  
+  window:
+    description: "A tall window at the end of the hallway. Through it, you can see part of the overgrown gardens and a stone mausoleum in the distance."
+    movable: false
+  
+  wallpaper:
+    description: "The faded floral wallpaper is peeling in places. When you look closely, you notice a repeating pattern that seems to contain tiny symbols among the flowers."
+    movable: false
+    reveals: ["small_door"]
+    
+  candle_sconce:
+    description: "An old iron sconce holds a half-melted candle. Oddly, it seems to have been recently lit."
+    movable: false
+
+# Events
+events:
+  strange_whisper:
+    trigger: "listen"
+    message: "As you stand quietly in the hallway, you hear a faint whisper seemingly coming from the walls themselves: 'Find the journals... before midnight...'"
+    flags_set: ["heard_whisper"]
+
+# Items that can be found
+items:
+  candle:
+    description: "A half-melted candle that still seems usable."
+

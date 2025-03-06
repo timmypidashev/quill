@@ -1,0 +1,24 @@
+# example_game/items/lantern.yaml
+---
+id: "lantern"
+name: "Old Lantern"
+description: "An old oil lantern that still seems functional."
+weight: 1.0
+takeable: true
+
+examination:
+  text: "An antique brass oil lantern with glass panels. Despite its age, it appears to be in working condition. There's still some oil in the reservoir, and the wick is intact. A brass plate on the bottom is engraved with 'Blackwood' in flowing script."
+
+effects:
+  light:
+    message: "You light the lantern. A warm, golden glow spreads around you, pushing back the shadows. The light seems to flicker oddly in certain directions, as if responding to unseen currents."
+    flags_set: ["lantern_lit"]
+  
+  use_in_dark_room:
+    message: "The lantern's light reveals details that were invisible in the darkness. Symbols are etched into the floor in a circular pattern around the center of the room."
+    flags_set: ["symbols_revealed"]
+  
+  extinguish:
+    message: "You extinguish the lantern, and darkness closes in around you once more."
+    flags_set: ["lantern_unlit"]
+    flags_remove: ["lantern_lit"]

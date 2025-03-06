@@ -1,0 +1,63 @@
+# example_game/characters/ghost.yaml
+---
+id: "ghost"
+name: "Young Woman's Ghost"
+description: "The translucent figure of a young woman in a maid's uniform from the Victorian era. She appears sad and lost, her form occasionally flickering like a candle in the wind."
+
+# Default dialogue
+dialogue:
+  text: "The ghostly figure of a young woman notices your presence. She wrings her hands anxiously, her voice barely above a whisper. 'You... you can see me? It's been so long since anyone could see me.'"
+  options:
+    - text: "Who are you?"
+      response: "My name is Eleanor. I was a maid here, in Professor Blackwood's household. I've been trapped here since... since the night of the professor's experiment. So many years ago now..."
+    
+    - text: "What happened to you?"
+      response: "I was bringing tea to the observatory where the professor was working. There was a bright light, terrible sounds... I woke up like this. Neither living nor dead, trapped in between. We all are—everyone who was in the mansion that night."
+    
+    - text: "Do you know about Professor Blackwood's research?"
+      response: "Only bits and pieces. He was obsessed with reaching the spirit world. Always in his study or the secret laboratory. He was kind to the staff, but distant, especially near the end. The night it all went wrong—it was the winter solstice. He said it had to be exactly at midnight."
+      actions:
+        - type: "set_flag"
+          flag: "professor_mentioned"
+    
+    - text: "Can I help you somehow?"
+      response: "After all this time... maybe. The professor still works on his experiment. He thinks he can fix what went wrong. If you find him, perhaps you could help. But be careful—not everything trapped here with us is... friendly."
+      actions:
+        - type: "set_flag"
+          flag: "help_ghost_offered"
+
+# Dialogue states
+dialogue_states:
+  professor_encountered:
+    condition:
+      has_flags: ["professor_encountered"]
+    text: "Eleanor's form becomes slightly clearer when she sees you. 'You've met him, haven't you? The professor. I can sense it.'"
+    options:
+      - text: "Yes, he wants me to complete his ritual."
+        response: "Be careful. The professor is... not as he once was. His mind has been between worlds for too long. His intentions may be good, but his judgment... I'm not sure we can trust it completely. There are notes hidden in the servants' quarters that might help you understand what really happened."
+        actions:
+          - type: "set_flag"
+            flag: "servants_quarters_hint"
+      
+      - text: "Do you think his ritual will work?"
+        response: "I don't know. The boundaries between worlds have been damaged for so long. But something must be done—the disturbances are getting worse. More entities are slipping through, and not all of them are harmless like us."
+      
+      - text: "Are there others like you here?"
+        response: "Several of us from the household remain. The cook in the kitchen, the gardener by the greenhouse. And... other things. Things that were never human. They lurk in the shadows, growing stronger. They don't want the ritual completed."
+
+  with_ritual_items:
+    condition:
+      has_flags: ["has_amulet", "has_map", "has_text"]
+    text: "Eleanor gasps softly as she notices the items you're carrying. 'Those are the professor's ritual items! You're really going to attempt it, aren't you?'"
+    options:
+      - text: "Yes, tonight at midnight."
+        response: "Then take this. It belonged to me in life—a locket my mother gave me. The professor doesn't know, but I was there that night because I sensed something was wrong. This locket protected me from the worst of it. It might help you too." 
+        actions:
+          - type: "give_item"
+            item: "protection_locket"
+      
+      - text: "Is there anything else I should know?"
+        response: "The ritual as the professor designed it binds too much power to himself. That's what went wrong. The forces need to be balanced, distributed. There are markings in the observatory floor—stand between them, not at the center as his notes likely indicate."
+        actions:
+          - type: "set_flag"
+            flag: "ritual_hint"

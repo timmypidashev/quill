@@ -1,0 +1,15 @@
+# example_game/items/book.yaml
+---
+id: "journal"
+name: "Professor's Journal"
+description: "A leather-bound journal filled with notes and diagrams."
+weight: 0.5
+takeable: true
+
+examination:
+  text: "Professor Blackwood's research journal, bound in worn leather. The pages are filled with meticulous notes, observations, and diagrams related to supernatural phenomena. Many entries discuss the 'thinning of the veil between worlds' and experiments conducted in the mansion. The final entry, dated December 21, 1901, mentions a breakthrough scheduled for midnight that would 'forever change our understanding of reality.' The handwriting becomes increasingly erratic towards the end."
+
+effects:
+  read:
+    message: "You carefully read through the journal. Professor Blackwood was investigating supernatural phenomena, particularly the possibility of communication with the spirit world. His experiments became increasingly dangerous, culminating in a ritual scheduled for midnight on the winter solstice of 1901. According to local records, that was the night he disappeared."
+    flags_set: ["read_journal"]

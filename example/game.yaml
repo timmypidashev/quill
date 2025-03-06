@@ -1,0 +1,23 @@
+# game.yaml - Fixed version
+---
+title: "The Haunted Mansion"
+author: "Game Dev Team"
+version: "1.0"
+description: "Explore a mysterious mansion filled with secrets and supernatural occurrences. Can you uncover the truth behind the hauntings and escape before midnight?"
+tags: ["mystery", "haunted", "exploration", "puzzle"]
+# Note the space after the pipe character and proper indentation
+banner: |
+  _____  _                _    _                             _           _   
+  |_   _|| |              | |  | |                           | |         | |  
+    | |  | |__    ___     | |__| |  __ _  _   _  _ __   ___ | |_   ___  | |_ 
+    | |  | '_ \  / _ \    |  __  | / _` || | | || '_ \ / __|| __| / _ \ | __|
+    | |  | | | ||  __/    | |  | || (_| || |_| || | | |\__ \| |_ |  __/ | |_ 
+    \_/  |_| |_| \___|    |_|  |_| \__,_| \__,_||_| |_||___/ \__| \___|  \__|
+   __  __                     _               
+  |  \/  |                   (_)              
+  | \  / |  __ _  _ __   ___  _   ___   _ __  
+  | |\/| | / _` || '_ \ / __|| | / _ \ | '_ \ 
+  | |  | || (_| || | | |\__ \| || (_) || | | |
+  |_|  |_| \__,_||_| |_||___/|_| \___/ |_| |_|
+
+starting_scene: "starting_room"

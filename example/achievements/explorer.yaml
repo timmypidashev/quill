@@ -1,0 +1,10 @@
+# example_game/achievements/explorer.yaml
+---
+id: "explorer"
+name: "Thorough Explorer"
+description: "Discover all areas of the mansion, including the hidden rooms."
+condition:
+  required_flags: ["visited_starting_room", "visited_hallway", "visited_library", "visited_study", "visited_kitchen", "visited_servants_quarters", "visited_observatory", "visited_secret_passage", "visited_hidden_workroom", "visited_attic", "visited_cellar"]
+reward:
+  text: "ACHIEVEMENT UNLOCKED: Thorough Explorer - You've uncovered every nook and cranny of the Blackwood Mansion. Few have been as diligent in their exploration."
+

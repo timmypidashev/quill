@@ -1,0 +1,68 @@
+# example_game/scenes/library.yaml
+---
+name: "Library"
+description: "Floor-to-ceiling bookshelves line the walls of this magnificent library. Thousands of volumes on every subject imaginable fill the shelves, though many show signs of age and neglect. A large oak desk sits in the center of the room, and comfortable reading chairs are positioned near the fireplace, which shows signs of recent use. A rolling ladder provides access to the upper shelves."
+
+# Exits
+exits:
+  entrance_hall:
+    target: "starting_room"
+    description: "The door leads back to the entrance hall."
+  
+  secret_reading_room:
+    target: "secret_reading_room"
+    description: "A hidden door behind one of the bookshelves."
+    hidden: true
+
+# Objects
+objects:
+  bookshelves:
+    description: "The towering bookshelves contain thousands of books on subjects ranging from natural philosophy to occult practices. Many seem to be first editions or rare volumes."
+    movable: false
+  
+  desk:
+    description: "A massive oak desk with intricate carvings. Papers are scattered across its surface, and one drawer is partially open."
+    movable: false
+    contains: ["journal"]
+  
+  fireplace:
+    description: "A large stone fireplace with ornate carvings. Despite the mansion being abandoned, the ashes seem fresh, as if it was used recently."
+    movable: false
+  
+  specific_bookshelf:
+    description: "This particular bookshelf contains works exclusively on supernatural phenomena and local folklore. One book appears to be slightly out of alignment with the others."
+    movable: false
+    reveals: ["secret_reading_room"]
+  
+  rolling_ladder:
+    description: "A wooden rolling ladder that allows access to the upper shelves. It seems to be in good working condition."
+    movable: true
+
+# Items that can be found
+items:
+  journal:
+    description: "Professor Blackwood's research journal, filled with notes about supernatural phenomena and mentions of experiments conducted in the mansion."
+  
+  ancient_tome:
+    description: "An ancient leather-bound book with strange symbols on its cover. The pages are filled with text in a language you don't recognize."
+    hidden: true
+
+# Characters in this scene
+characters:
+  professor:
+    condition:
+      lacks_flags: ["professor_encountered"]
+
+# Events
+events:
+  pull_strange_book:
+    trigger: "pull strange book"
+    condition:
+      lacks_flags: ["secret_room_revealed"]
+    message: "As you pull the misaligned book, you hear a clicking sound. One of the bookshelves swings outward slightly, revealing a hidden room behind it!"
+    flags_set: ["secret_room_revealed"]
+  
+  read_journal:
+    trigger: "read journal"
+    message: "You flip through Professor Blackwood's research journal. It details his studies of supernatural phenomena in the region and mentions experiments with 'thinning the veil between worlds.' The last entry, dated 1901, mentions a breakthrough that would change everything, scheduled for midnight on the winter solstice."
+    flags_set: ["read_journal"]

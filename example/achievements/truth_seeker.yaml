@@ -1,0 +1,9 @@
+# example_game/achievements/truth_seeker.yaml
+---
+id: "truth_seeker"
+name: "Truth Seeker"
+description: "Collect all the journal entries and piece together the full story."
+condition:
+  required_flags: ["found_journal_1", "found_journal_2", "found_journal_3", "found_notes", "found_newspaper"]
+reward:
+  text: "ACHIEVEMENT UNLOCKED

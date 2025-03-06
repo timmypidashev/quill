@@ -1,0 +1,57 @@
+# example_game/characters/professor.yaml
+---
+id: "professor"
+name: "Professor Blackwood"
+description: "A translucent figure of an elderly man in Victorian clothing. He has a distinguished beard and piercing eyes that retain their intensity despite his ghostly form. He appears to be deeply focused on something only he can see."
+
+# Default dialogue
+dialogue:
+  text: "The spectral figure turns to you with mild surprise. 'Ah, a visitor! How unusual. I've been so engrossed in my work that I hardly notice the years passing. Are you interested in my research?'"
+  options:
+    - text: "Who are you?"
+      response: "I am—or rather, was—Professor Edward Blackwood. This was my home and laboratory. I've continued my research here since... well, since the unfortunate incident in 1901. Time moves differently for me now."
+    
+    - text: "What happened to you?"
+      response: "A miscalculation. A simple, terrible miscalculation. I was attempting to bridge the gap between our world and the spirit realm. I succeeded, in a manner of speaking, though not as I intended. I became trapped between worlds—neither fully here nor fully there."
+    
+    - text: "What research were you doing?"
+      response: "I was studying the permeability of the veil between the physical and spiritual planes. My journals contain the details—you should find them if you haven't already. The answers are there, along with the means to complete what I started. Perhaps you could succeed where I failed."
+      actions:
+        - type: "set_flag"
+          flag: "journals_mentioned"
+    
+    - text: "How can I help you?"
+      response: "Find my journals and complete the ritual—but with the necessary corrections. The final ritual must be performed at midnight in the observatory. The key elements are scattered throughout the mansion; my workspace was disturbed after my... transition. Be wary though, there are other entities here that would prevent the restoration of natural order."
+      actions:
+        - type: "set_flag"
+          flag: "help_offered"
+
+# Dialogue states
+dialogue_states:
+  after_reading_journals:
+    condition:
+      has_flags: ["read_journal"]
+    text: "The professor notices the journal in your possession. 'Ah! You've found one of my journals. Excellent. Now you begin to understand what I was attempting. The ritual must be completed tonight—the alignment is right once more.'"
+    options:
+      - text: "The ritual seems dangerous."
+        response: "All worthwhile endeavors carry risk, my friend. But the risk of leaving things as they are is far greater. The imbalance I created grows stronger. If not corrected, the boundary between worlds will collapse entirely."
+      
+      - text: "What do I need for the ritual?"
+        response: "The amulet in my study, the celestial map from the observatory, and the incantation text from my hidden workroom. Bring them to the ritual circle at midnight. And be cautious—my failed attempt attracted entities that wish to prevent any correction to the natural order."
+        actions:
+          - type: "set_flag"
+            flag: "quest_items_revealed"
+      
+      - text: "Are you trapped here?"
+        response: "In a manner of speaking. I exist between states—neither fully in your world nor the next. The same is true for the others you may encounter. Complete the ritual correctly, and we will all find our proper places again."
+
+  with_all_items:
+    condition:
+      has_flags: ["has_amulet", "has_map", "has_text"]
+    text: "The professor's form seems more defined as he notices the items you've collected. 'You have everything you need! Make haste to the observatory—midnight approaches.'"
+    options:
+      - text: "I'm ready."
+        response: "Excellent. I cannot enter the observatory myself—part of the imbalance I created—but I will guide you as best I can. Remember, the ritual must begin as the clock strikes twelve, not a moment before or after."
+      
+      - text: "I need more time."
+        response: "Time is the one luxury we do not have. The alignment occurs only once a year, and the imbalance grows more unstable by the hour. Whatever preparations remain, complete them swiftly."

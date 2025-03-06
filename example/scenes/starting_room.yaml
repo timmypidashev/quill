@@ -1,0 +1,72 @@
+# example_game/scenes/starting_room.yaml
+---
+name: "Entrance Hall"
+description: "You stand in the grand entrance hall of an old Victorian mansion. Moonlight filters through dusty windows, casting eerie shadows across the marble floor. A grand staircase curves upward to your right, while heavy oak doors lead to different parts of the mansion. The air is cold and still, with a faint scent of old books and roses."
+
+# Exits with names instead of directions
+exits:
+  staircase:
+    target: "upstairs_landing"
+    description: "A grand staircase leads to the upper floor."
+    hidden: false
+  
+  hallway:
+    target: "hallway"
+    description: "A long hallway extends into the east wing of the mansion."
+    hidden: false
+  
+  library_door:
+    target: "library"
+    description: "A heavy oak door with ornate carvings. A small brass plaque reads 'Library'."
+    hidden: false
+
+# Objects that can be examined
+objects:
+  windows:
+    description: "Tall windows with intricate leadwork. Through the dust-covered glass, you can see a full moon hanging above an overgrown garden."
+    movable: false
+  
+  chandelier:
+    description: "A crystal chandelier hangs from the high ceiling. While most of the candles have burned away long ago, a few still flicker with a pale light, though you can't see how they could have been lit."
+    movable: false
+  
+  portrait:
+    description: "A large portrait of a stern-looking man in Victorian clothing. The eyes seem to follow you as you move around the room. A small plaque on the frame reads 'Professor Edward Blackwood, 1842-1901'."
+    movable: false
+    reveals: ["hidden_key_slot"]
+  
+  hidden_key_slot:
+    description: "Behind the portrait, you notice a small keyhole in the wall."
+    hidden: true
+    movable: false
+
+# Events that can happen in this scene
+events:
+  use_key_on_slot:
+    trigger: "use key on hidden_key_slot"
+    condition:
+      lacks_flags: ["secret_passage_revealed"]
+    message: "You insert the ornate key into the hidden keyhole. With a grinding sound, a section of the wall swings inward, revealing a secret passage!"
+    flags_set: ["secret_passage_revealed"]
+  
+  enter_secret_passage:
+    trigger: "enter secret_passage"
+    condition:
+      has_flags: ["secret_passage_revealed"]
+    message: "You duck through the narrow opening into the secret passage."
+    change_scene: "secret_passage"
+
+# Different states of this scene
+states:
+  secret_passage_revealed:
+    condition:
+      has_flags: ["secret_passage_revealed"]
+    description: "You stand in the grand entrance hall of the old Victorian mansion. Moonlight filters through dusty windows, casting eerie shadows across the marble floor. A section of wall near the portrait has swung open, revealing a secret passage."
+
+# Characters in this scene
+characters:
+  ghost:
+    condition:
+      has_flags: ["professor_mentioned"]
+      lacks_flags: ["ghost_encountered"]
+

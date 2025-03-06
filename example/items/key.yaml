@@ -1,0 +1,19 @@
+# example_game/items/key.yaml
+---
+id: "key"
+name: "Ornate Key"
+description: "An ornate brass key with intricate symbols engraved on its surface."
+weight: 0.1
+takeable: true
+
+examination:
+  text: "An ornate brass key with intricate symbols engraved along its shaft and bow. The symbols appear to be a mix of astrological signs and alchemical notations. Despite its apparent age, the key is in perfect condition, with no signs of tarnish. It feels unusually warm to the touch."
+
+effects:
+  use_on_hidden_key_slot:
+    message: "You insert the ornate key into the hidden keyhole. With a grinding sound, a section of the wall swings inward, revealing a secret passage!"
+    flags_set: ["secret_passage_revealed"]
+  
+  use_on_locked_drawer:
+    message: "The key fits perfectly in the locked drawer. With a turn, the lock clicks open."
+    flags_set: ["drawer_unlocked"]

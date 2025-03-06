@@ -1,0 +1,10 @@
+# example_game/achievements/spirit_communicator.yaml
+---
+id: "spirit_communicator"
+name: "Spirit Communicator"
+description: "Speak with all the ghostly residents of the mansion."
+condition:
+  required_flags: ["professor_encountered", "ghost_encountered", "cook_encountered", "gardener_encountered", "butler_encountered"]
+reward:
+  text: "ACHIEVEMENT UNLOCKED: Spirit Communicator - You've shown patience and compassion in speaking with all the trapped souls of the mansion. Their stories have given you a deeper understanding of the tragedy that occurred."
+
