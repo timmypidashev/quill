@@ -47,7 +47,7 @@ def main():
     
     # Create a new game
     elif args.command == "create":
-        from soliloquy.utils.game_creator import create_new_game
+        from .utils.game_creator import create_new_game
         create_new_game(args.game_name, args.destination)
     
     return 0

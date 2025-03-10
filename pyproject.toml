@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quill-sdk"
-version = "0.3.0"
+version = "0.3.1"
 packages = [{include = "quill"}]
 description = "A text-based adventure game engine with natural language processing"
 authors = ["Timothy Pidashev <pidashev.tim@gmail.com>"]
