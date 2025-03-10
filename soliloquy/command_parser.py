@@ -1,56 +1,52 @@
 # soliloquy/command_parser.py
 import os
-import re
 import json
 import logging
+import re
 from typing import Dict, List, Any, Optional, Tuple
 
 try:
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer, logging as transformers_logging
-    # Suppress the transformer warnings
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import logging as transformers_logging
+    # Suppress transformer warnings
     transformers_logging.set_verbosity_error()
 except ImportError:
     # Optional dependencies for neural parsing
     pass
 
+try:
+    import openai
+    HAS_OPENAI = True
+except ImportError:
+    HAS_OPENAI = False
+
 class CommandParser:
     """
     Parser for converting natural language input to game commands.
-    Uses a neural model to understand player intent.
     """
     
-    def __init__(self, model_name: str = "DeepSeek-AI/deepseek-coder-1.3b-instruct", use_neural: bool = True):
+    def __init__(self, parser_type: str = "local", model_name: str = "DeepSeek-AI/deepseek-coder-1.3b-instruct"):
         """
         Initialize the command parser.
         
         Args:
-            model_name: Name of the neural model to use
-            use_neural: Whether to use neural model (False falls back to rule-based)
+            parser_type: Type of parser to use ("local", "api", or "basic")
+            model_name: Name of the neural model to use (for local parser)
         """
         self.logger = logging.getLogger('soliloquy')
-        self.use_neural = use_neural
+        self.parser_type = parser_type.lower()
+        self.model_name = model_name
         self.model = None
         self.tokenizer = None
         
-        # Try to initialize the neural model if requested
-        if use_neural:
-            try:
-                self.logger.info(f"Initializing neural command parser with model: {model_name}")
-                self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    model_name,
-                    torch_dtype=torch.float16,
-                    device_map="auto",
-                    trust_remote_code=True
-                )
-                self.logger.info("Neural model loaded successfully")
-            except Exception as e:
-                self.logger.error(f"Failed to load neural model: {e}")
-                self.logger.info("Falling back to rule-based parsing")
-                self.use_neural = False
+        # Initialize parser based on type
+        if self.parser_type == "local":
+            self._init_local_model()
+        elif self.parser_type == "api":
+            self._init_api()
         
-        # Initialize rule-based parser components
+        # Initialize rule-based parser components (used by all parser types)
         self.verbs = {
             "look": ["look", "examine", "inspect", "check", "view", "see", "observe"],
             "go": ["go", "move", "walk", "run", "travel", "head", "proceed", "enter", "exit", "leave"],
@@ -62,6 +58,45 @@ class CommandParser:
         }
         
         self.prepositions = ["on", "in", "with", "to", "at", "for", "from", "by", "about"]
+    
+    def _init_local_model(self):
+        """Initialize the local neural model."""
+        try:
+            self.logger.info(f"Initializing local neural model: {self.model_name}")
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            
+            # Load model in half precision
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_name,
+                torch_dtype=torch.float16,
+                device_map="auto",
+                trust_remote_code=True
+            )
+            
+            self.logger.info("Local neural model loaded successfully")
+        except Exception as e:
+            self.logger.error(f"Failed to load local neural model: {e}")
+            self.parser_type = "basic"
+    
+    def _init_api(self):
+        """Initialize the API-based parser."""
+        if not HAS_OPENAI:
+            self.logger.error("OpenAI package not installed. Run 'pip install openai'")
+            self.parser_type = "basic"
+            return
+            
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            self.logger.error("No OpenAI API key found in OPENAI_API_KEY environment variable")
+            self.parser_type = "basic"
+            return
+            
+        try:
+            openai.api_key = api_key
+            self.logger.info("OpenAI API initialized successfully")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize OpenAI API: {e}")
+            self.parser_type = "basic"
     
     def parse(self, user_input: str, current_scene: Any, player: Any) -> Dict[str, Any]:
         """
@@ -75,19 +110,26 @@ class CommandParser:
         Returns:
             Command dictionary with action and targets
         """
-        if self.use_neural and self.model and self.tokenizer:
+        if self.parser_type == "local" and self.model and self.tokenizer:
             try:
                 return self._neural_parse(user_input, current_scene, player)
             except Exception as e:
                 self.logger.error(f"Neural parsing failed: {e}")
                 self.logger.info("Falling back to rule-based parsing")
         
+        elif self.parser_type == "api":
+            try:
+                return self._api_parse(user_input, current_scene, player)
+            except Exception as e:
+                self.logger.error(f"API parsing failed: {e}")
+                self.logger.info("Falling back to rule-based parsing")
+        
         # Fall back to rule-based parsing
         return self._rule_based_parse(user_input, current_scene, player)
-
-    def _neural_parse(self, user_input: str, current_scene: Any, player: Any) -> Dict[str, Any]:
+    
+    def _create_prompt(self, user_input: str, current_scene: Any, player: Any) -> str:
         """
-        Use neural model to parse user input.
+        Create the prompt to send to models.
         
         Args:
             user_input: Natural language input from the player
@@ -95,14 +137,14 @@ class CommandParser:
             player: Player object for context
             
         Returns:
-            Command dictionary with action and targets
+            Prompt string
         """
         # Create prompt with rich context
         visible_objects = current_scene.get_visible_objects(player.get_flags())
         visible_exits = current_scene.get_visible_exits(player.get_flags())
         inventory = player.get_inventory()
         
-        # Format visible objects with descriptions for better context
+        # Format objects with descriptions for better context
         objects_context = []
         for obj_name, obj_desc in visible_objects.items():
             if isinstance(obj_desc, dict) and "description" in obj_desc:
@@ -148,17 +190,17 @@ class CommandParser:
         # List of valid object names for reference
         valid_objects = list(visible_objects.keys())
         valid_objects_str = ", ".join([f'"{obj}"' for obj in valid_objects])
+        
         prompt = f"""
-<instruction>
-You are a command parser for a text adventure game. Your job is to convert natural language input into structured commands, being forgiving of typos and grammatical errors.
+You are a command parser for a text adventure game. You MUST output ONLY a single valid JSON object and nothing else.
 
 Current scene: {current_scene.name}
 Description: {current_scene.description[:150]}...
 
-Objects you can interact with:
+Objects in the scene:
     {objects_str}
 
-Characters present:
+Characters in the scene:
     {characters_str}
 
 Available exits:
@@ -167,7 +209,7 @@ Available exits:
 Inventory:
     {inventory_str}
 
-Commands to output (only these are valid):
+Valid commands are:
 - {{"action": "look"}} - Look around the current scene
 - {{"action": "examine", "target": "<object_name>"}} - Examine a specific object closely
 - {{"action": "go", "target": "<exit_name>"}} - Move to a different scene through an available exit
@@ -177,38 +219,35 @@ Commands to output (only these are valid):
 - {{"action": "inventory"}} - Check your inventory
 - {{"action": "drop", "target": "<item_name>"}} - Drop an item
 
-ESSENTIAL RULES:
-1. Be forgiving of typos and grammatical errors. If the user input approximately matches an object, exit, or character name, use the correct name from the available options.
+CRITICAL RULES:
+1. For "go" commands, you MUST use the EXACT exit name from this list: {valid_exits_str}
+   For example, if the user says "go to library" but the exit is named "library_door", use "library_door".
+2. For "examine" commands, you MUST use the EXACT object name from this list: {valid_objects_str}
+3. For "examine" commands, ALWAYS use the action "examine" when the user wants to look at a specific object.
+4. Output ONLY a raw JSON object with no additional text.
+5. "look" alone is for looking at the entire scene, not specific objects.
+6. STRICTLY use ONLY the exact names listed above for exits and objects.
 
-2. For "go" commands, if the exact exit isn't found, use the most similar one:
-   - If user says "go to library" but only "library_door" exists, output {{"action": "go", "target": "library_door"}}
-   - If user says "lets go to the garden" but only "garden_path" exists, output {{"action": "go", "target": "garden_path"}}
-
-3. For "examine" commands, always match to the closest valid object:
-   - If user says "look at chair" but only "armchair" exists, output {{"action": "examine", "target": "armchair"}}
-   - If user says "look at bookcase" but only "bookshelves" exists, output {{"action": "examine", "target": "bookshelves"}}
-
-4. For "talk" commands, match to the closest character name:
-   - If user says "talk to professor" but character is "professor_blackwood", output {{"action": "talk", "target": "professor_blackwood"}}
-
-5. ALWAYS use action "examine" (not "look") when the user wants to look at a specific object.
-
-6. The "look" action should ONLY be used to look at the entire scene.
-
-Valid exit names: {valid_exits_str}
-Valid object names: {valid_objects_str}
-
-Parse this input (be forgiving of errors): "{user_input}"
-
-IMPORTANT: If you are unsure of what to do, please match the most closest command possible. Expect the user to 
-make mistakes, say things that might be a bit too long and not perfectly match the available options. Try 
-to be as helpful as possible in understanding their intent and converting it into a valid command.
+Parse this input: "{user_input}"
 
 Output ONLY the JSON object representing the command.
-
-Output JUST this: {{"action": "X", "target": "Y"}}
-</instruction>
 """
+        return prompt
+    
+    def _neural_parse(self, user_input: str, current_scene: Any, player: Any) -> Dict[str, Any]:
+        """
+        Use neural model to parse user input.
+        
+        Args:
+            user_input: Natural language input from the player
+            current_scene: Current scene object for context
+            player: Player object for context
+            
+        Returns:
+            Command dictionary with action and targets
+        """
+        prompt = self._create_prompt(user_input, current_scene, player)
+        
         # Generate response with fixed parameters
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
         
@@ -246,21 +285,64 @@ Output JUST this: {{"action": "X", "target": "Y"}}
                 # Try to parse it
                 command = json.loads(json_str)
                 if "action" in command:
-                     # Force "look" with target to become "examine"
-                    if command["action"] == "look" and "target" in command:
-                        self.logger.info(f"Converting 'look' with target to 'examine': {command}")
-                        command["action"] = "examine"
-                    
                     self.logger.info(f"Successfully parsed command: {command}")
                     return command
-
         except json.JSONDecodeError as e:
             self.logger.warning(f"Failed to parse JSON: {e}")
         
         # If JSON parsing failed, fall back to rule-based
         self.logger.warning("Falling back to rule-based parsing")
         return self._rule_based_parse(user_input, current_scene, player)
-
+    
+    def _api_parse(self, user_input: str, current_scene: Any, player: Any) -> Dict[str, Any]:
+        """
+        Use OpenAI API to parse user input.
+        
+        Args:
+            user_input: Natural language input from the player
+            current_scene: Current scene object for context
+            player: Player object for context
+            
+        Returns:
+            Command dictionary with action and targets
+        """
+        prompt = self._create_prompt(user_input, current_scene, player)
+        
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a command parser that only outputs valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                max_tokens=100
+            )
+            
+            if response.choices and len(response.choices) > 0:
+                response_text = response.choices[0].message.content.strip()
+                self.logger.debug(f"OpenAI API response: {response_text}")
+                
+                # Extract and parse JSON
+                try:
+                    # Try to find JSON in the response
+                    json_match = re.search(r'({.*})', response_text, re.DOTALL)
+                    if json_match:
+                        json_str = json_match.group(1)
+                        command = json.loads(json_str)
+                        if "action" in command:
+                            self.logger.info(f"Successfully parsed command: {command}")
+                            return command
+                except Exception as e:
+                    self.logger.warning(f"Failed to parse JSON from API response: {e}")
+            
+            self.logger.warning(f"Invalid response from OpenAI API")
+            return self._rule_based_parse(user_input, current_scene, player)
+            
+        except Exception as e:
+            self.logger.error(f"Error calling OpenAI API: {e}")
+            return self._rule_based_parse(user_input, current_scene, player)
+    
     def _rule_based_parse(self, user_input: str, current_scene: Any, player: Any) -> Dict[str, Any]:
         """
         Use rule-based approach to parse user input.
@@ -273,40 +355,17 @@ Output JUST this: {{"action": "X", "target": "Y"}}
         Returns:
             Command dictionary with action and targets
         """
+        # [Your existing rule-based parsing code]
         # Normalize input
-        normalized_input = user_input.lower()
-        words = normalized_input.split()
+        words = user_input.lower().split()
         
         # Empty input
         if not words:
             return {"action": "invalid"}
-        
-        # Special case handling for common phrasings
-        if "go up" in normalized_input or "climb" in normalized_input:
-            if "staircase" in normalized_input or "stairs" in normalized_input:
-                return {"action": "go", "target": "staircase"}
-        
-        if "go to" in normalized_input or "head to" in normalized_input or "lets go" in normalized_input:
-            exits = current_scene.get_visible_exits(player.get_flags())
-            for exit_name in exits:
-                if exit_name.lower() in normalized_input:
-                    return {"action": "go", "target": exit_name}
-        
-        # Handle "look around" and similar
-        if any(phrase in normalized_input for phrase in ["look around", "search", "check around", "look for clues"]):
+            
+        # Handle "look around" specially
+        if user_input.lower() in ["look around", "look around for clues"]:
             return {"action": "look"}
-        
-        # Handle "look at X" or "examine X"
-        look_at_match = re.search(r"look at(?: the)? (.+)", normalized_input)
-        if look_at_match:
-            target = look_at_match.group(1).strip()
-            return {"action": "examine", "target": target}
-        
-        # Handle "check inventory", "show inventory", etc.
-        if any(phrase in normalized_input for phrase in ["inventory", "my items", "what do i have"]):
-            return {"action": "inventory"}
-        
-        # Original logic continues below
         
         # Single-word commands
         if len(words) == 1:
@@ -343,12 +402,6 @@ Output JUST this: {{"action": "X", "target": "Y"}}
                 break
         
         if not canonical_action:
-            # Try to recover by checking for exits in the input
-            exits = current_scene.get_visible_exits(player.get_flags())
-            for exit_name in exits:
-                if exit_name.lower() in normalized_input:
-                    return {"action": "go", "target": exit_name}
-            
             return {"action": "invalid", "original_input": user_input}
             
         # Build command
@@ -359,9 +412,14 @@ Output JUST this: {{"action": "X", "target": "Y"}}
             
         if indirect:
             command["indirect_target"] = indirect
+        
+        # Force "look" with target to become "examine"
+        if command["action"] == "look" and "target" in command:
+            self.logger.info(f"Converting 'look' with target to 'examine': {command}")
+            command["action"] = "examine"
             
-        return command 
-
+        return command
+    
     def _extract_command_parts(self, words: List[str]) -> Tuple[str, str, str]:
         """
         Extract action, target, and indirect target from words.

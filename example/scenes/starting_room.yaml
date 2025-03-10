@@ -32,7 +32,7 @@ objects:
   
   portrait:
     description: "A large portrait of a stern-looking man in Victorian clothing. The eyes seem to follow you as you move around the room. A small plaque on the frame reads 'Professor Edward Blackwood, 1842-1901'."
-    movable: false
+    movable: true
     reveals: ["hidden_key_slot"]
   
   hidden_key_slot:

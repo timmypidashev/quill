@@ -23,18 +23,23 @@ class SoliloquyEngine:
     """
     Main game engine for Soliloquy text adventure games.
     """
-    
-    def __init__(self, game_dir: str = None):
+    def __init__(self, game_dir: str = None, parser_type: str = "local", model_name: str = "DeepSeek-AI/deepseek-coder-1.3b-instruct"):
         """
         Initialize the Soliloquy game engine.
         
         Args:
-            game_dir: Directory containing game YAML files
+            game_dir: Optional directory containing game YAML files.
+                     If None, will use the current directory.
+            parser_type: Type of parser to use ("local", "api", or "basic")
+            model_name: Name of the neural model to use (for local parser)
         """
         self.logger = setup_logger('soliloquy')
         self.logger.info("Initializing Soliloquy Engine")
         
+        # If no game_dir is provided, use the current directory
         self.game_dir = game_dir if game_dir else "."
+        self.logger.info(f"Using game directory: {os.path.abspath(self.game_dir)}")
+        
         self.console = Console()
         self.spinner = Spinner()
         self.typewriter = TypeWriter()
@@ -49,10 +54,11 @@ class SoliloquyEngine:
         self.player = Player()
         self.current_scene = None
         self.game_running = False
-        
-        # Initialize command parser with neural model
-        self.command_parser = CommandParser()
-        
+    
+        # Initialize command parser with specified type
+        self.logger.info(f"Initializing command parser with type: {parser_type}")
+        self.command_parser = CommandParser(parser_type=parser_type, model_name=model_name)
+    
     def load_game(self) -> bool:
         """
         Load game data from YAML files.
