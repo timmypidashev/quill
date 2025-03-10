@@ -1,4 +1,3 @@
-# soliloquy/item.py
 from typing import Dict, Any, Optional
 
 class Item:

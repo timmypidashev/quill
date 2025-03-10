@@ -1,18 +1,17 @@
 [tool.poetry]
-name = "soliloquy"
-version = "0.1.0"
+name = "quill-sdk"
+version = "0.2.3"
+packages = [{include = "quill"}]
 description = "A text-based adventure game engine with natural language processing"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Timothy Pidashev <pidashev.tim@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/yourusername/soliloquy"
+repository = "https://github.com/timmypidashev/quill"
 keywords = ["game", "text-adventure", "interactive-fiction", "education"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Education",
     "Topic :: Games/Entertainment :: Role-Playing",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
@@ -36,7 +35,7 @@ isort = "^5.10.1"
 neural = ["transformers", "torch"]
 
 [tool.poetry.scripts]
-soliloquy = "soliloquy.cli:main"
+quill = "quill.cli:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

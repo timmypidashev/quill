@@ -3,7 +3,7 @@
 import os
 import sys
 import argparse
-from soliloquy.engine import SoliloquyEngine
+from quill_sdk.engine import QuillEngine
 
 def main():
     """Main entry point for the example game."""

@@ -1,4 +1,3 @@
-# soliloquy/scene.py
 from typing import Dict, List, Set, Optional, Any
 
 class Scene:

@@ -1,4 +1,3 @@
-# soliloquy/character.py
 from typing import Dict, List, Set, Any, Optional
 
 class Character:

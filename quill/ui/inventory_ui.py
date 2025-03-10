@@ -1,4 +1,3 @@
-# soliloquy/ui/inventory_ui.py
 from typing import List, Dict, Any
 
 try:

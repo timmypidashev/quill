@@ -1,21 +1,21 @@
 import os
 import sys
 import argparse
-from soliloquy.engine import SoliloquyEngine
+from .engine import QuillEngine
 
 def main():
-    """Main entry point for the Soliloquy CLI."""
-    parser = argparse.ArgumentParser(description="Soliloquy Text Adventure Engine")
+    """Main entry point for the Quill CLI."""
+    parser = argparse.ArgumentParser(description="Quill Text Adventure Engine")
     
     subparsers = parser.add_subparsers(dest="command", help="Commands")
     
     # Run game command
-    run_parser = subparsers.add_parser("run", help="Run a Soliloquy game")
+    run_parser = subparsers.add_parser("run", help="Run a Quill game")
     run_parser.add_argument("game_dir", help="Directory containing game YAML files")
     run_parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     
     # Create game command
-    create_parser = subparsers.add_parser("create", help="Create a new Soliloquy game")
+    create_parser = subparsers.add_parser("create", help="Create a new Quill game")
     create_parser.add_argument("game_name", help="Name of the new game")
     create_parser.add_argument("--destination", "-d", default=".", help="Destination directory")
     
@@ -33,7 +33,7 @@ def main():
             print(f"Error: Game directory '{args.game_dir}' not found.")
             return 1
         
-        engine = SoliloquyEngine(args.game_dir)
+        engine = QuillEngine(args.game_dir)
         engine.start_game()
     
     # Create a new game

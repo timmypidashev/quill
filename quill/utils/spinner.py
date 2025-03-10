@@ -1,4 +1,3 @@
-# soliloquy/utils/spinner.py
 import sys
 import time
 import threading

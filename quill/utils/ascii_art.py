@@ -1,4 +1,3 @@
-# soliloquy/utils/ascii_art.py
 import sys
 import time
 from typing import Optional

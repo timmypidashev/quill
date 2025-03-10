@@ -5,7 +5,7 @@ from pathlib import Path
 
 def create_new_game(game_name, destination="."):
     """
-    Create a new Soliloquy game with basic structure.
+    Create a new Quill game with basic structure.
     
     Args:
         game_name: Name of the game
@@ -35,7 +35,7 @@ def create_new_game(game_name, destination="."):
         "title": game_name,
         "author": "Your Name",
         "version": "0.1.0",
-        "description": f"A new text adventure created with Soliloquy.",
+        "description": f"A new text adventure created with Quill.",
         "tags": ["adventure", "example"],
         "banner": f"{game_name.upper()}",
         "starting_scene": "starting_room"

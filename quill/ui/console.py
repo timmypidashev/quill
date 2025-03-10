@@ -1,4 +1,3 @@
-# soliloquy/ui/console.py
 import os
 import sys
 import time

@@ -1,4 +1,3 @@
-# soliloquy/command_parser.py
 import os
 import json
 import logging

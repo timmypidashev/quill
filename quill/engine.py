@@ -19,13 +19,13 @@ from .utils.spinner import Spinner
 from .utils.ascii_art import display_ascii_art
 from .utils.logger import setup_logger
 
-class SoliloquyEngine:
+class QuillEngine:
     """
-    Main game engine for Soliloquy text adventure games.
+    Main game engine for Quill text adventure games.
     """
     def __init__(self, game_dir: str = None, parser_type: str = "local", model_name: str = "DeepSeek-AI/deepseek-coder-1.3b-instruct"):
         """
-        Initialize the Soliloquy game engine.
+        Initialize the Quill game engine.
         
         Args:
             game_dir: Optional directory containing game YAML files.
@@ -34,7 +34,7 @@ class SoliloquyEngine:
             model_name: Name of the neural model to use (for local parser)
         """
         self.logger = setup_logger('soliloquy')
-        self.logger.info("Initializing Soliloquy Engine")
+        self.logger.info("Initializing Quill Engine")
         
         # If no game_dir is provided, use the current directory
         self.game_dir = game_dir if game_dir else "."

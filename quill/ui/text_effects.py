@@ -1,4 +1,3 @@
-# soliloquy/ui/text_effects.py
 import sys
 import time
 import random

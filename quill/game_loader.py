@@ -1,5 +1,3 @@
-# soliloquy/game_loader.py - Better directory searching
-
 import os
 import glob
 import yaml

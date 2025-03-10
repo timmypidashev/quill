@@ -1,4 +1,3 @@
-# soliloquy/ui/dialogue_ui.py
 import sys
 import time
 from typing import List, Dict, Any, Optional

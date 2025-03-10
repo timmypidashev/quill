@@ -1,4 +1,3 @@
-# soliloquy/player.py
 from typing import Set, List, Dict, Any
 
 class Player:

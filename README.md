@@ -1,4 +1,4 @@
-# soliloquy
+# Quill
 A modern text-based adventure engine that transforms natural writing into interactive experiences.
 
 ## Features
@@ -15,29 +15,29 @@ A modern text-based adventure engine that transforms natural writing into intera
 ## Installation
 
 ```bash
-pip install soliloquy
+pip install quill-sdk
 ```
 
 For neural language processing features (optional):
 ```bash
-pip install soliloquy[neural]
+pip install quill-sdk[neural]
 ```
 
 ## Quick Start
 
 Create a new game:
 ```bash
-soliloquy create "My Adventure"
+quill create "My Adventure"
 ```
 
 Run your game:
 ```bash
-soliloquy run my_adventure
+quill run my_adventure
 ```
 
 ## Game Structure
 
-A Soliloquy game consists of YAML files organized in the following structure:
+A quill game consists of YAML files organized in the following structure:
 
 ```
 game.yaml                # Main game configuration
