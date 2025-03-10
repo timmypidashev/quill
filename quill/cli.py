@@ -13,8 +13,6 @@ def main():
                        help="Type of command parser to use (basic=rule-based, api=OpenAI, local=neural model)")
     parser.add_argument("--model", default="DeepSeek-AI/deepseek-coder-1.3b-instruct",
                        help="Model name for local neural parsing")
-    parser.add_argument("--save-dir", help="Directory for save files", default=None)
-    parser.add_argument("--load", type=int, help="Load a specific save ID on startup", default=None)
     args = parser.parse_args()
     
     # Set up OpenAI API key from environment if using API parser
@@ -29,7 +27,6 @@ def main():
         args.game_dir, 
         parser_type=args.parser, 
         model_name=args.model,
-        save_dir=args.save_dir,
         debug=args.debug
     )
     
