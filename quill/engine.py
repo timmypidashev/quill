@@ -169,7 +169,7 @@ class QuillEngine:
         characters_in_scene = self.get_characters_in_scene()
         if characters_in_scene:
             self.console.print_characters(characters_in_scene)
-    
+                
     def process_command(self, command: Dict[str, Any]):
         """
         Process the parsed command.
@@ -182,8 +182,44 @@ class QuillEngine:
             self.console.print_error("I don't understand what you want to do.")
             return
             
-        # Check for events that might trigger from this command
-        self.check_events(action, command.get("target", ""), command.get("indirect_target", ""))
+        # Handle event triggers specially - this is the key new functionality
+        if action == "trigger_event":
+            event_id = command.get("event_id")
+            if event_id and event_id in self.current_scene.events:
+                event = self.current_scene.events[event_id]
+                
+                # Check if event has conditions
+                if "condition" in event:
+                    condition_met = self._check_event_condition(event["condition"])
+                    if not condition_met:
+                        self.console.print_error("Nothing happens.")
+                        return
+                
+                # Process the event
+                if "message" in event:
+                    self.typewriter.print(event["message"])
+                
+                # Set any flags
+                if "flags_set" in event:
+                    for flag in event["flags_set"]:
+                        self.player.add_flag(flag)
+                
+                # Add any items
+                if "items_add" in event:
+                    for item_id in event["items_add"]:
+                        if item_id in self.items:
+                            self.player.add_item(item_id)
+                            item_name = self.items[item_id].get_name()
+                            self.typewriter.print(f"* You got: {item_name}")
+                
+                # Change scene if specified
+                if "change_scene" in event:
+                    target_scene = event["change_scene"]
+                    if target_scene in self.scenes:
+                        self.current_scene = self.scenes[target_scene]
+                        self.display_current_scene()
+                
+                return
         
         # Basic commands
         if action == "look":
@@ -213,8 +249,142 @@ class QuillEngine:
             target = command.get("target", "")
             self.talk_to_character(target)
         
+        # Additional action handlers for the verbs we added
+        elif action == "eat":
+            target = command.get("target", "")
+            self._handle_eat(target)
+        
+        elif action == "drink":
+            target = command.get("target", "")
+            self._handle_drink(target)
+        
+        elif action == "push" or action == "pull":
+            target = command.get("target", "")
+            self._handle_push_pull(target, action)
+        
+        elif action == "search":
+            target = command.get("target", "")
+            self._handle_search(target)
+        
+        elif action == "open" or action == "close":
+            target = command.get("target", "")
+            self._handle_open_close(target, action)
+        
         else:
             self.console.print_error(f"I don't know how to '{action}'.")
+
+    def _check_event_condition(self, condition: Dict[str, Any]) -> bool:
+        """
+        Check if event conditions are met.
+        
+        Args:
+            condition: Condition dictionary
+            
+        Returns:
+            True if conditions are met
+        """
+        # Check required flags
+        if "has_flags" in condition:
+            required_flags = set(condition["has_flags"])
+            if not required_flags.issubset(self.player.get_flags()):
+                return False
+        
+        # Check forbidden flags
+        if "lacks_flags" in condition:
+            forbidden_flags = set(condition["lacks_flags"])
+            if forbidden_flags.intersection(self.player.get_flags()):
+                return False
+        
+        return True
+
+    # Helper methods for additional actions
+    def _handle_eat(self, target: str):
+        """Handle eat action."""
+        # Check if it's an object in the scene
+        if self.current_scene.has_object(target):
+            # Check for specific events related to eating this
+            self.check_events(f"eat {target}")
+            return
+        
+        # Check if it's an item in inventory
+        if self.player.has_item(target):
+            self.check_events(f"eat {target}")
+            return
+        
+        self.console.print_error(f"You don't see any '{target}' here to eat.")
+
+    def _handle_drink(self, target: str = ""):
+        """Handle drink action."""
+        # If no target specified, check for general drink event
+        if not target:
+            if self.check_events("drink"):
+                return
+        
+        # Check if there's a specific target to drink
+        if target and self.current_scene.has_object(target):
+            if self.check_events(f"drink {target}"):
+                return
+            
+            if target == "water" or target == "well":
+                if self.check_events("drink water") or self.check_events("drink from well") or self.check_events("use well"):
+                    return
+        
+        self.console.print_error(f"You don't see anything to drink here.")
+
+    def _handle_push_pull(self, target: str, action: str):
+        """Handle push/pull actions."""
+        if not target:
+            self.console.print_error(f"What do you want to {action}?")
+            return
+        
+        # Check for events related to pushing/pulling this object
+        if self.check_events(f"{action} {target}"):
+            return
+        
+        if not self.current_scene.has_object(target):
+            self.console.print_error(f"You don't see any '{target}' here to {action}.")
+            return
+        
+        self.console.print_error(f"You can't {action} the {target}.")
+
+    def _handle_search(self, target: str):
+        """Handle search action."""
+        if not target:
+            # Generic search of the scene
+            if self.check_events("search"):
+                return
+            self.display_current_scene()
+            return
+        
+        # Search a specific object
+        if self.current_scene.has_object(target):
+            if self.check_events(f"search {target}"):
+                return
+                
+            # If no specific search event, reveal any hidden objects
+            self.current_scene.reveal_hidden_objects(target, self.player)
+            obj_desc = self.current_scene.get_object_description(target, self.player.get_flags())
+            self.typewriter.print(f"You search the {target}. {obj_desc}")
+            return
+        
+        self.console.print_error(f"You don't see any '{target}' here to search.")
+
+    def _handle_open_close(self, target: str, action: str):
+        """Handle open/close actions."""
+        if not target:
+            self.console.print_error(f"What do you want to {action}?")
+            return
+        
+        # Check for events related to opening/closing this
+        if self.check_events(f"{action} {target}"):
+            return
+        
+        if not self.current_scene.has_object(target):
+            self.console.print_error(f"You don't see any '{target}' here to {action}.")
+            return
+        
+        self.console.print_error(f"You can't {action} the {target}.")
+        
     
     def handle_movement(self, exit_name: str):
         """Handle player movement between scenes."""

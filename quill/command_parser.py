@@ -52,11 +52,19 @@ class CommandParser:
             "take": ["take", "grab", "pick", "collect", "get", "acquire", "steal"],
             "use": ["use", "utilize", "employ", "apply", "operate"],
             "talk": ["talk", "speak", "chat", "converse", "ask", "tell", "say"],
-            "inventory": ["inventory", "items", "possessions", "belongings"],
-            "drop": ["drop", "discard", "put", "place", "set"]
+            "inventory": ["inventory", "items", "possessions", "belongings", "inv"],
+            "drop": ["drop", "discard", "put", "place", "set"],
+            # Add more verbs for additional actions
+            "eat": ["eat", "consume", "taste", "bite", "chew"],
+            "drink": ["drink", "sip", "gulp", "swallow"],
+            "push": ["push", "shove", "move", "shift", "roll"],
+            "pull": ["pull", "tug", "drag", "yank"],
+            "search": ["search", "look", "check", "examine", "investigate"],
+            "open": ["open", "unlock", "unseal"],
+            "close": ["close", "shut", "lock", "seal"]
         }
         
-        self.prepositions = ["on", "in", "with", "to", "at", "for", "from", "by", "about"]
+        self.prepositions = ["on", "in", "with", "to", "at", "for", "from", "by", "about", "under", "behind", "inside"]
     
     def _init_local_model(self):
         """Initialize the local neural model."""
@@ -109,6 +117,19 @@ class CommandParser:
         Returns:
             Command dictionary with action and targets
         """
+        # First, check if the input matches any event triggers in the current scene
+        if hasattr(current_scene, 'events') and current_scene.events:
+            for event_id, event_data in current_scene.events.items():
+                if 'trigger' in event_data:
+                    trigger = event_data['trigger'].lower()
+                    if user_input.lower() == trigger or user_input.lower().startswith(trigger):
+                        return {
+                            "action": "trigger_event",
+                            "event_id": event_id,
+                            "original_input": user_input
+                        }
+        
+        # If no event trigger matched, proceed with normal command parsing
         if self.parser_type == "local" and self.model and self.tokenizer:
             try:
                 return self._neural_parse(user_input, current_scene, player)
@@ -138,6 +159,7 @@ class CommandParser:
         Returns:
             Prompt string
         """
+        # [This method remains unchanged]
         # Create prompt with rich context
         visible_objects = current_scene.get_visible_objects(player.get_flags())
         visible_exits = current_scene.get_visible_exits(player.get_flags())
@@ -245,6 +267,7 @@ Output ONLY the JSON object representing the command.
         Returns:
             Command dictionary with action and targets
         """
+        # [This method remains unchanged]
         prompt = self._create_prompt(user_input, current_scene, player)
         
         # Generate response with fixed parameters
@@ -305,6 +328,7 @@ Output ONLY the JSON object representing the command.
         Returns:
             Command dictionary with action and targets
         """
+        # [This method remains unchanged]
         prompt = self._create_prompt(user_input, current_scene, player)
         
         try:
@@ -354,7 +378,18 @@ Output ONLY the JSON object representing the command.
         Returns:
             Command dictionary with action and targets
         """
-        # [Your existing rule-based parsing code]
+        # Check for event triggers first
+        if hasattr(current_scene, 'events') and current_scene.events:
+            for event_id, event_data in current_scene.events.items():
+                if 'trigger' in event_data:
+                    trigger = event_data['trigger'].lower()
+                    if user_input.lower() == trigger or user_input.lower().startswith(trigger):
+                        return {
+                            "action": "trigger_event",
+                            "event_id": event_id,
+                            "original_input": user_input
+                        }
+        
         # Normalize input
         words = user_input.lower().split()
         
@@ -429,6 +464,7 @@ Output ONLY the JSON object representing the command.
         Returns:
             Tuple of (action, target, indirect_target)
         """
+        # [This method remains unchanged]
         action = words[0]
         target = ""
         indirect_target = ""
