@@ -3,6 +3,7 @@ import os
 import glob
 import time
 import yaml
+import logging
 from typing import Dict, List, Optional, Any
 
 from .game_loader import GameLoader
@@ -23,7 +24,7 @@ class QuillEngine:
     """
     Main game engine for Quill text adventure games.
     """
-    def __init__(self, game_dir: str = None, parser_type: str = "local", model_name: str = "DeepSeek-AI/deepseek-coder-1.3b-instruct"):
+    def __init__(self, game_dir: str = None, parser_type: str = "local", model_name: str = "DeepSeek-AI/deepseek-coder-1.3b-instruct", debug: bool = False):
         """
         Initialize the Quill game engine.
         
@@ -33,7 +34,8 @@ class QuillEngine:
             parser_type: Type of parser to use ("local", "api", or "basic")
             model_name: Name of the neural model to use (for local parser)
         """
-        self.logger = setup_logger('soliloquy')
+        log_level = logging.DEBUG if debug else logging.CRITICAL
+        self.logger = setup_logger("quill", level=log_level)
         self.logger.info("Initializing Quill Engine")
         
         # If no game_dir is provided, use the current directory
