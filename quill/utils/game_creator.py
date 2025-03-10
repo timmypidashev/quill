@@ -60,6 +60,6 @@ def create_new_game(game_name, destination="."):
         yaml.dump(starting_room, f, default_flow_style=False)
     
     print(f"Created new game '{game_name}' in {game_dir}")
-    print("To run your game, use: soliloquy run", game_dir)
+    print("To run your game, use: quill run", game_dir)
     
     return True
